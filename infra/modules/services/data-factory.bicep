@@ -11,8 +11,8 @@ param location string = resourceGroup().location
 @description('Tags for the resource. Optional.')
 param tags object = {}
 
-@allowed(['FactoryGitHubConfiguration','FactoryVSTSConfiguration'])
-param repositoryType string = 'FactoryGitHubConfiguration'
+// @allowed(['FactoryGitHubConfiguration','FactoryVSTSConfiguration'])
+// param repositoryType string = 'FactoryGitHubConfiguration'
 
 resource dataFactory 'Microsoft.DataFactory/factories@2018-06-01' = {
   name: name

@@ -18,6 +18,7 @@ param tags object = {}
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
   location: location
+  tags: tags
 }
 
 module keyVault 'br/public:security/keyvault:1.0.2' = {
@@ -40,7 +41,8 @@ module logAnalytics 'br/public:storage/log-analytics-workspace:1.0.3' = {
   }
 }
 
-module azureDataFactory 'modules/dataFactory.bicep' = {
+// Azure Data Factory
+module dataFactory 'modules/dataFactory.bicep' = {
   scope: resourceGroup
   name: '${deployment().name}-adf'
   params: {
@@ -48,3 +50,15 @@ module azureDataFactory 'modules/dataFactory.bicep' = {
     tags: tags
   }
 }
+
+// Azure Databricks
+module databricks 'modules/services/data-bricks.bicep' = {
+  scope: resourceGroup
+  name: '${deployment().name}-adb'
+  params: {
+    location: location
+    tags: tags
+  }
+}
+
+output databricksUrl string = databricks.outputs.url
