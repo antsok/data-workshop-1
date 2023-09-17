@@ -4,12 +4,12 @@ Valid characters: Lowercase letters and numbers
 ''')
 @minLength(3)
 @maxLength(24)
-param storageAccountName string = '${uniqueString(resourceGroup().id)}sta'
+param name string = '${uniqueString(resourceGroup().id)}sta'
 
 @description('Location for storage account resources. Defaults to the resource group location.')
 param location string = resourceGroup().location
 
-@description('Storage account SKU. Defaults to Standard_ZRS.')
+@description('Storage account SKU. Defaults to Standard_LRS.')
 @allowed(['Standard_LRS','Standard_ZRS'])
 param skuName string = 'Standard_LRS'
 
@@ -27,8 +27,14 @@ param isHnsEnabled bool = false
 @description('Tags for the resource. Optional.')
 param tags object = {}
 
+@description('''List of blob containers to create in the storage account. Optional.
+Format : [ { name: 'container1' }, { name: 'container2' } ]
+''')
+param blobContainers array = []
+
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
-  name: storageAccountName
+  name: name
   location: location
   kind: kind
   tags: tags
@@ -42,6 +48,16 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     allowBlobPublicAccess: false
   }
 }
+
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01' = if(length(blobContainers) > 0) {
+  name: 'default'
+  parent: storageAccount
+}
+
+resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-04-01' = [for container in blobContainers: {
+  name: container.name
+  parent: blobService
+}]
 
 output name string = storageAccount.name
 output resourceId string = storageAccount.id

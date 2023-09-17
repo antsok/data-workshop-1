@@ -40,6 +40,26 @@ module logAnalytics 'br/public:storage/log-analytics-workspace:1.0.3' = {
     tags: tags
   }
 }
+// Data Lake
+module dataLake 'modules/dataLake.bicep' = {
+  name: '${deployment().name}-dataLake'
+  scope: resourceGroup
+  params: {
+    location: location
+    tags: tags
+    filesystems: [
+      {
+        name: 'staging'
+      }
+      {
+        name: 'raw'
+      }
+      {
+        name: 'synapse'
+      }
+    ]
+  }
+}
 
 // Azure Data Factory
 module dataFactory 'modules/dataFactory.bicep' = {
@@ -58,6 +78,18 @@ module databricks 'modules/services/data-bricks.bicep' = {
   params: {
     location: location
     tags: tags
+  }
+}
+
+// Azure Synapse Analytics
+module synapse 'modules/services/synapse.bicep' = {
+  scope: resourceGroup
+  name: '${deployment().name}-synapse'
+  params: {
+    location: location
+    tags: tags
+    datalakeStorageAccountName: dataLake.outputs.name
+    datalakeFilesystem: 'synapse'
   }
 }
 

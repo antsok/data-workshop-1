@@ -13,21 +13,50 @@ param lakeResourceGroupName string = 'data-platform-lake-rg'
 
 param samplesResourceGroupName string = 'data-platform-samples-rg'
 
+param deployPurview bool = false
+
+param tags object = {}
+
+// Management
+
+resource managementResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = if(deployPurview) {
+  name: 'data-platform-management-rg'
+  location: location
+  tags: tags
+}
+
+module purview 'modules/services/purview.bicep' = if(deployPurview) {
+  name: '${deployment().name}-purview'
+  scope: managementResourceGroup
+  params: {
+    location: location
+    tags: tags
+  }
+}
+
 // Data Lake
 
 resource lakeResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: lakeResourceGroupName
   location: location
+  tags: tags
 }
 
-module dataLake './modules/services/storage-account.bicep' = {
+module dataLake './modules/dataLake.bicep' = {
   name: '${deployment().name}-dataLake'
   scope: lakeResourceGroup
   params: {
+    name: 'ourlake000${uniqueString(subscription().id)}'
     location: location
-    isHnsEnabled: true
-    accessTier: 'Hot'
-    skuName: 'Standard_LRS'
+    tags: tags
+    filesystems: [
+      {
+        name: 'prepared'
+      }
+      {
+        name: 'curated'
+      }
+    ]
   }
 }
 
@@ -36,6 +65,7 @@ module dataLake './modules/services/storage-account.bicep' = {
 resource samplesResourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: samplesResourceGroupName
   location: location
+  tags: tags
 }
 
 module samples './modules/services/storage-account.bicep' = {
@@ -43,13 +73,17 @@ module samples './modules/services/storage-account.bicep' = {
   scope: samplesResourceGroup
   params: {
     location: location
+    tags: tags
     isHnsEnabled: false
     accessTier: 'Cool'
     skuName: 'Standard_LRS'
+    blobContainers: [
+      {
+        name: 'samples'
+      }
+    ]
   }
 }
 
 output lakeResourceId string = dataLake.outputs.resourceId
 output lakeAccountName string = dataLake.outputs.name
-output lakeEndpointBlob string = dataLake.outputs.endpointBlob
-output lakeEndpointDfs string = dataLake.outputs.endpointDfs
