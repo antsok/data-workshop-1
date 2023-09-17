@@ -24,10 +24,14 @@ param accessTier string = 'Hot'
 @description('Enable Hierarchical Namespace (DataLakeV2). Defaults to fase.')
 param isHnsEnabled bool = false
 
+@description('Tags for the resource. Optional.')
+param tags object = {}
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
   location: location
   kind: kind
+  tags: tags
   sku: {
     name: skuName
   }
@@ -38,3 +42,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     allowBlobPublicAccess: false
   }
 }
+
+output name string = storageAccount.name
+output resourceId string = storageAccount.id
+output endpointBlob string = storageAccount.properties.primaryEndpoints.blob
+output endpointFile string = storageAccount.properties.primaryEndpoints.file
+output endpointDfs string = storageAccount.properties.primaryEndpoints.dfs

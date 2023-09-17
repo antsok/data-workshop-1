@@ -2,8 +2,8 @@
 
 // This template creates the following resources:
 // - Resource Group
-// - Data Lake ( Azure Storage Account Gen2)
-// - Blob Storage ( Azure Storage Account)
+// - Data Lake Gen2 (on Azure Storage Account)
+// - Blob Storage
 
 targetScope = 'subscription'
 
@@ -48,3 +48,8 @@ module samples './modules/services/storage-account.bicep' = {
     skuName: 'Standard_LRS'
   }
 }
+
+output lakeResourceId string = dataLake.outputs.resourceId
+output lakeAccountName string = dataLake.outputs.name
+output lakeEndpointBlob string = dataLake.outputs.endpointBlob
+output lakeEndpointDfs string = dataLake.outputs.endpointDfs
