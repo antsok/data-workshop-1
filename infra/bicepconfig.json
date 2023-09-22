@@ -1,0 +1,6 @@
+{
+    "experimentalFeaturesEnabled": {
+      "asserts": true,
+      "testFramework": true
+    }
+  }
